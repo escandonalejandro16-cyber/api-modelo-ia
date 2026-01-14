@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from app.controllers.groq_controller import router as groq_router
 
 app = FastAPI(
-    title="Groq API MVC",
+
+    title="Groq API MVC-2",
     version="1.0.0"
 )
 

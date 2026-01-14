@@ -1,8 +1,18 @@
+# Framework web
 fastapi==0.110.0
-uvicorn==0.29.0
 
-groq==0.9.0
+# Servidor ASGI para producción (Uvicorn + Gunicorn)
+uvicorn[standard]==0.29.0
+gunicorn==21.2.0
+
+# Validación de datos sin Rust (Pydantic 1.x)
+pydantic<2
+
+# Cliente HTTP
 httpx==0.27.0
 
+# Variables de entorno
 python-dotenv==1.0.1
-pydantic==2.6.4
+
+# Groq (versión estable que no requiere compilación)
+groq==0.8.0
