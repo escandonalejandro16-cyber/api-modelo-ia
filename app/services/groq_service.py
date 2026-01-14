@@ -1,37 +1,37 @@
 from groq import Groq
 from app.core.config import GROQ_API_KEY
+from app.memory.conversation_memory import ConversationMemory
+from app.agents.ventas_agent import VENTAS_SYSTEM_PROMPT
 
 
 class GroqService:
     def __init__(self):
-        if not GROQ_API_KEY:
-            raise RuntimeError("GROQ_API_KEY no está configurada")
-
         self.client = Groq(api_key=GROQ_API_KEY)
+        self.memory = ConversationMemory(max_turns=20)
 
-    def ask(self, question: str) -> str:
-        try:
-            completion = self.client.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "Eres un asistente experto en sistemas e inteligencia artificial."
-                    },
-                    {
-                        "role": "user",
-                        "content": question
-                    }
-                ],
-                temperature=0.3,
-                max_tokens=200
-            )
+    def ask_ventas(self, user_id: str, question: str) -> str:
+        agent = "ventas"
 
-            if not completion or not completion.choices:
-                raise ValueError("Respuesta vacía del modelo")
+        # Recuperar memoria
+        history = self.memory.get_context(user_id, agent)
 
-            return completion.choices[0].message.content
+        messages = [
+            {"role": "system", "content": VENTAS_SYSTEM_PROMPT},
+            *history,
+            {"role": "user", "content": question}
+        ]
 
-        except Exception as e:
-            # ⚠️ Importante para logs en producción
-            raise RuntimeError(f"Error en GroqService.ask(): {str(e)}")
+        completion = self.client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=messages,
+            temperature=0.4,
+            max_tokens=250
+        )
+
+        answer = completion.choices[0].message.content
+
+        # Guardar memoria
+        self.memory.add_message(user_id, agent, "user", question)
+        self.memory.add_message(user_id, agent, "assistant", answer)
+
+        return answer

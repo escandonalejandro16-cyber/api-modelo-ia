@@ -1,15 +1,19 @@
 from fastapi import APIRouter, HTTPException
-from app.models.request_models import GroqRequest
 from app.services.groq_service import GroqService
+from app.models.request_models import VentasRequest
 
-router = APIRouter(prefix="/groq", tags=["Groq"])
+router = APIRouter(prefix="/ventas", tags=["Agente Ventas"])
 
 service = GroqService()
 
-@router.post("/ask")
-def ask_groq(data: GroqRequest):
+
+@router.post("/chat")
+def ventas_chat(data: VentasRequest):
     try:
-        response = service.ask(data.question)
-        return {"response": response}
+        answer = service.ask_ventas(
+            user_id=data.user_id,
+            question=data.question
+        )
+        return {"answer": answer}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
